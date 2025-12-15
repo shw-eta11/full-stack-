@@ -1,0 +1,51 @@
+# Node modules
+node_modules/
+**/node_modules/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# ENV files (VERY IMPORTANT)
+.env
+.env.*
+backend/.env
+frontend/.env
+
+# Dist / build outputs
+dist/
+build/
+frontend/build/
+backend/build/
+
+# Temporary files
+.DS_Store
+Thumbs.db
+
+# Editor configs
+.vscode/
+.idea/
+
+# Docker
+**/.dockerignore
+docker-compose.override.yml
+
+# Cache
+.cache/
+frontend/.parcel-cache/
+frontend/.next/
+frontend/.turbo/
+
+# Coverage
+coverage/
+
+# Lock files (Optional – many teams ignore these)
+# package-lock.json
+# yarn.lock
+# pnpm-lock.yaml
+
+# Local database volumes (if created accidentally)
+mysql-data/
+db_data/
