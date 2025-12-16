@@ -5,7 +5,7 @@ function App() {
   const [users, setUsers] = useState([]);
 
   useEffect(() => {
-   axios.get("http://localhost:4000/users")
+   axios.get(`${process.env.REACT_APP_API_URL}/users`)
       .then(res => setUsers(res.data))
       .catch(err => console.error(err));
   }, []);
