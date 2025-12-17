@@ -1,8 +1,6 @@
 services:
     frontend:
       build: ./frontend
-      environment:
-        - REACT_APP_API_URL=http://3.108.218.82:4000
       container_name: frontend_app
       ports:
         - "3000:80"
