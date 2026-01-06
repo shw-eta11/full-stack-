@@ -23,7 +23,7 @@ services:
         - "3306:3306"
       environment:
          MYSQL_ROOT_PASSWORD: root
-         MYSQL_DATABASE: app_db
+         MYSQL_DATABASE: myapp
       volumes:
         - db_data:/var/lib/mysql  
       restart: always
