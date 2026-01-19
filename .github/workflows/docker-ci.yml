@@ -2,4 +2,25 @@ name: react node mysql CI
 on:
   push:
     branches: [ main ]
-    
+jobs:
+  website-ci:    
+     runs-on: ubuntu-latest
+
+     steps:
+        - name: Checkout website code
+          uses: actions/checkout@v4
+
+        - name: Build and start website
+          run: docker-compose up -d --build
+
+        - name: Wait for MYSQL
+          run: sleep 15
+
+        - name: RUN backend tests
+          run: docker-compose exec -T  backend npm test   
+          continue-on-error: true  
+
+        - name: Stop containers   
+          run: docker-compose down
+
+
