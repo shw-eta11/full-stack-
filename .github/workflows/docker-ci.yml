@@ -17,10 +17,10 @@ jobs:
           run: sleep 15
 
         - name: RUN backend tests
-          run: docker-compose exec -T  backend npm test   
+          run: docker compose exec -T  backend npm test   
           continue-on-error: true  
 
         - name: Stop containers   
-          run: docker-compose down
+          run: docker compose down
 
 
