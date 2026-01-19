@@ -1,40 +1,59 @@
-require('dotenv').config();   // <-- VERY IMPORTANT
-
 const express = require('express');
+const mysql = require('mysql2');
 const cors = require('cors');
-const db = require('./db');
+
+require('dotenv').config();
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 
-// Test API
-app.get('/', (req, res) => {
-  res.send('Hello from backend!');
+const PORT = process.env.PORT || 4000;
+
+// Create MySQL pool
+const db = mysql.createPool({
+  host: process.env.DB_HOST || 'db_app',   // Docker service name
+  user: process.env.DB_USER || 'root',
+  password: process.env.DB_PASSWORD || 'root',
+  database: process.env.DB_NAME || 'app_db'
 });
 
-// Example: Get all users
+// Retry DB connection until ready
+function checkDbConnection(retries = 5) {
+  db.getConnection((err, connection) => {
+    if (err) {
+      console.error('❌ DB not ready. Retrying in 5 seconds...');
+      if (retries > 0) setTimeout(() => checkDbConnection(retries - 1), 5000);
+      else console.error('❌ Could not connect to DB:', err);
+    } else {
+      console.log('✅ MySQL Connected!');
+      connection.release();
+    }
+  });
+}
+checkDbConnection();
+
+// Root route
+app.get('/', (req, res) => {
+  res.send('Backend is running! Use /users to fetch data.');
+});
+
+// /users route
 app.get('/users', (req, res) => {
   db.query('SELECT * FROM users', (err, results) => {
-    if (err) return res.status(500).send(err);
+    if (err) {
+      console.error('DB query error:', err);
+      return res.status(500).json({ error: 'Database query failed' });
+    }
     res.json(results);
   });
 });
 
-// Example: Add user
-app.post('/users', (req, res) => {
-  const { name, email } = req.body;
-  db.query(
-    'INSERT INTO users (name, email) VALUES (?, ?)', 
-    [name, email], 
-    (err, results) => {
-      if (err) return res.status(500).send(err);
-      res.json({ id: results.insertId, name, email });
-    }
-  );
+// Handle unknown routes
+app.use((req, res) => {
+  res.status(404).json({ error: 'Route not found' });
 });
 
-const PORT = process.env.PORT || 4000;
-app.listen(PORT, '0.0.0.0', () => {
+app.listen(PORT, () => {
   console.log(`Backend running on port ${PORT}`);
 });
