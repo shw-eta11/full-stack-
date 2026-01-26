@@ -12,22 +12,13 @@ jobs:
       - name: Checkout application code
         uses: actions/checkout@v4
 
-      - name: Set up SSH  
-        run: |
-          mkdir -p ~/.ssh
-          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
-
       - name: Deploy to EC2
         run: /
           ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
             set -e
             cd ${{secrets.APP_DIR}}
 
-            echo "Pulling latest changes from Git repository..."
-            git pull origin main
-
+            
             echo "Stopping and removing existing container..."
             docker-compose down
 
