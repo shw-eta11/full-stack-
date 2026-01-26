@@ -1,38 +1,42 @@
-name: react node mysql CI
+name: ec2 deploy CI
 on:
   push:
     branches: [ main ]
+  workflow_dispatch:
+  
 jobs:
-  website-ci:    
-     runs-on: ubuntu-latest
+  deploy:
+    runs-on: ubuntu-latest
 
-     steps:
-        - name: Checkout website code
-          uses: actions/checkout@v4
+    steps:
+      - name: Checkout application code
+        uses: actions/checkout@v4
 
-        - name: Create backend .env file
-          run: |
-           mkdir -p full-stack/backend
-           cat <<EOF > full-stack/backend/.env
-           DB_HOST=${{ secrets.DB_HOST }}
-           DB_USER=${{ secrets.DB_USER }}
-           DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-           DB_NAME=${{ secrets.DB_NAME }}
-           JWT_SECRET=${{ secrets.JWT_SECRET }}
-           EOF
+      - name: Set up SSH  
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.EC2_SSH_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan -H ${{ secrets.EC2_HOST }} >> ~/.ssh/known_hosts
 
+      - name: Deploy to EC2
+        run: /
+          ssh ${{ secrets.EC2_USER }}@${{ secrets.EC2_HOST }} << 'EOF'
+            set -e
+            cd ${{secrets.APP_DIR}}
 
-        - name: Build and start website
-          run: docker compose up -d --build
+            echo "Pulling latest changes from Git repository..."
+            git pull origin main
 
-        - name: Wait for MYSQL
-          run: sleep 15
+            echo "Stopping and removing existing container..."
+            docker-compose down
 
-        - name: RUN backend tests
-          run: docker compose exec -T  backend npm test   
-          continue-on-error: true  
+            echo "Building and starting new container..."
+            docker-compose up -d --build
 
-        - name: Stop containers   
-          run: docker compose down
+            echo "cleanup unused Docker resources..."
+            docker system prune -f
 
+            echo "Deployment completed successfully."
+          EOF
 
